@@ -33,8 +33,9 @@ class Call:
                     from_=self.config_save.get_twilio_number()
                             )
         response = VoiceResponse()
-        response.dial(outbound_dial)
-        response.say('Goodbye')
+        dial = Dial(url='xml/callinfo.xml')
+        dial.number(outbound_dial)
+        response.append(dial)
 
 if __name__ == '__main__':
     call = Call()

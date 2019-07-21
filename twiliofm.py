@@ -12,7 +12,7 @@ class TwilioFM(Tk):
         Twilio File Maker app.
     '''
 
-    VERSION = 0.9
+    VERSION = 1.0
 
     def __init__(self):
         ''' TwilioFM main entry point, no parameters
@@ -22,33 +22,41 @@ class TwilioFM(Tk):
         Then utilizing Twilio's API Rest architecture
         dials that number and the users personal telephone.
         '''
-
         super().__init__()
-        self.title('Twilio FM v.{}'.format(self.VERSION))
+        self.title('TwilioFM v.{}'.format(self.VERSION))
         self.geometry('{}x{}'.format(220, 75))
         self.resizable(False, False)
         self.frame = Frame(self)
-        self.frame.grid(row=0, column=0)
+        self.frame.pack()
         self.results = IntVar()
         self.clipboard_clear()
-        ###########################
-        #    TTK Button artwork   #
+
         b = ttk.Button(self.frame,
                        text='Call Number',
                        width='20',
                        command=lambda: self.make_call(digits))
         b.grid(column=0, row=1, columnspan=3)
-        ###########################
-        self.show_menu()
+
+        menubar = Menu(self)
+        filemenu = Menu(menubar, tearoff=0)
+        filemenu.add_command(label='Open Config',
+                             command=self.open_tfmp)
+        filemenu.add_command(label='Close',
+                             command=self.destroy)
+        menubar.add_cascade(label='File', menu=filemenu)
+        self.config(menu=menubar)
         self.update()
 
         while True:
-            # Checks keyboard input for valid telephone.
-            # prevents error if NULL.
+            # Checks keyboard input for valid telephone
+            # prevents error if NULL or invalid number.
             try:
                 digits = self.extract_number(self.clipboard_get())
             except TclError:
                 digits = 'Copy a valid 11 digit Phone Number'
+            except TypeError:
+                digits = 'Copy a valid 11 digit Phone Number'
+
             self.show_number(digits)
             self.update()
 
@@ -64,17 +72,6 @@ class TwilioFM(Tk):
         label['textvariable'] = self.results
         self.results.set(number)
 
-    def show_menu(self):
-        # Create Menu Items #
-        menubar = Menu(self)
-        filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_command(label='Open Config',
-                             command=self.open_tfmp)
-        filemenu.add_command(label='Close',
-                             command=self.destroy)
-        menubar.add_cascade(label='File', menu=filemenu)
-        self.config(menu=menubar)
-
     def open_tfmp(self):
         # Opens tfmp in default text editor
         os.startfile('src\\tfmp.ini')
@@ -87,12 +84,16 @@ class TwilioFM(Tk):
         elif len(number) == 10:
             return '+1{}'.format(''.join(number))
         else:
-            return
+            raise TypeError
 
     def make_call(self, valid_number):
         # Create instance object of Call and dials valid_number
-        call = Call()
-        call.dial_phone(valid_number)
+        if valid_number == 'Copy a valid 11 digit Phone Number':
+            print('Invalid number!')
+            return
+        else:
+            call = Call()
+            call.dial_phone(valid_number)
 
 
 if __name__ == '__main__':
